@@ -1,0 +1,37 @@
+name: Automatización de Noticias Dinámicas
+
+on:
+  schedule:
+      - cron: '0 9 * * *'
+          - cron: '45 15 * * *'
+            workflow_dispatch:
+
+            jobs:
+              generar-y-publicar:
+                  runs-on: ubuntu-latest
+
+                      steps:
+                            - name: Checkout repository
+                                    uses: actions/checkout@v3
+
+                                          - name: Setup Python
+                                                  uses: actions/setup-python@v4
+                                                          with:
+                                                                    python-version: '3.11'
+
+                                                                          - name: Install dependencies
+                                                                                  run: pip install requests pillow
+
+                                                                                        - name: Ejecutar automatización
+                                                                                                env:
+                                                                                                          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+                                                                                                                    GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+                                                                                                                            run: python3 automatizacion_noticias_dinamicas.py
+                                                                                                                            
+                                                                                                                                  - name: Commit y push cambios
+                                                                                                                                          run: |
+                                                                                                                                                    git config --local user.email "action@github.com"
+                                                                                                                                                              git config --local user.name "GitHub Action"
+                                                                                                                                                                        git add -A
+                                                                                                                                                                                  git commit -m "Auto: Noticias generadas $(date +'%Y-%m-%d %H:%M:%S')" || true
+                                                                                                                                                                                            git push
