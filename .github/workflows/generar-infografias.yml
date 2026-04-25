@@ -1,0 +1,45 @@
+name: Generar Infografías Diarias
+
+on:
+  schedule:
+      # Ejecutar a las 09:00 AM y 15:45 PM (horarios UTC)
+          - cron: '0 9 * * *'      # 09:00 UTC (14:00 Argentina)
+              - cron: '45 15 * * *'    # 15:45 UTC (20:45 Argentina)
+                workflow_dispatch:  # Permite ejecutar manualmente
+
+                jobs:
+                  generar-infografias:
+                      runs-on: ubuntu-latest
+
+                              steps:
+                                    - name: Clonar repositorio
+                                            uses: actions/checkout@v4
+
+                                                        - name: Configurar Python 3.11
+                                                                uses: actions/setup-python@v4
+                                                                        with:
+                                                                                  python-version: '3.11'
+                                                                                            cache: 'pip'
+
+                                                                                                        - name: Instalar dependencias
+                                                                                                                run: |
+                                                                                                                          python -m pip install --upgrade pip
+                                                                                                                                    pip install matplotlib seaborn pandas numpy requests
+                                                                                                                                          
+                                                                                                                                                - name: Generar infografías y subir a GitHub
+                                                                                                                                                        env:
+                                                                                                                                                                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                                                                                                                                                                          run: python generar_infografias.py
+                                                                                                                                                                                
+                                                                                                                                                                                      - name: Commit automático de URLs
+                                                                                                                                                                                              run: |
+                                                                                                                                                                                                        git config --local user.email "github-actions@github.com"
+                                                                                                                                                                                                                  git config --local user.name "GitHub Actions"
+                                                                                                                                                                                                                            if [ -f urls_infografias.json ]; then
+                                                                                                                                                                                                                                        git add urls_infografias.json
+                                                                                                                                                                                                                                                    git commit -m "📊 Actualizar URLs de infografías - $(date +'%Y-%m-%d %H:%M:%S')"
+                                                                                                                                                                                                                                                                git push
+                                                                                                                                                                                                                                                                          fi
+                                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                      - name: Notificar éxito
+                                                                                                                                                                                                                                                                                              run: echo "✅ Infografías generadas y publicadas exitosamente"
